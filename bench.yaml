@@ -1,0 +1,47 @@
+prelude: |
+  class Array
+    def cycle_each_cons1(n)
+      return Enumerator.new{ cycle_each_cons1(n, &_1) } unless block_given?
+
+      cycle.each_cons(n).take(length).each{ yield _1 }
+    end
+
+    def cycle_each_cons2(n)
+      unless block_given?
+        return Enumerator.new(method(:size)) { cycle_each_cons2(n, &_1) }
+      end
+
+      enum = cycle.each_cons(n)
+      size.times { yield enum.next }
+      self
+    end
+    def cycle_each_cons3(n)
+      return Enumerator.new{ cycle_each_cons3(n, &_1) } unless block_given?
+      (self+self[0,n-1]).each_cons(n){ yield _1 }
+    end
+  end
+
+  ary0 = [*1..100000]
+  ary1 = [*1..10]
+  n2=1000
+  ary2 = [*1..(n2*10)]
+
+benchmark:
+  - ary0.cycle_each_cons1(3){ _1 }
+  - ary0.cycle_each_cons2(3){ _1 }
+  - ary0.cycle_each_cons3(3){ _1 }
+  - ary0.cycle_each_cons1(3).to_a
+  - ary0.cycle_each_cons2(3).to_a
+  - ary0.cycle_each_cons3(3).to_a
+  - ary1.cycle_each_cons1(3){ _1 }
+  - ary1.cycle_each_cons2(3){ _1 }
+  - ary1.cycle_each_cons3(3){ _1 }
+  - ary1.cycle_each_cons1(3).to_a
+  - ary1.cycle_each_cons2(3).to_a
+  - ary1.cycle_each_cons3(3).to_a
+  - ary2.cycle_each_cons1(n2){ _1 }
+  - ary2.cycle_each_cons2(n2){ _1 }
+  - ary2.cycle_each_cons3(n2){ _1 }
+  - ary2.cycle_each_cons1(n2).to_a
+  - ary2.cycle_each_cons2(n2).to_a
+  - ary2.cycle_each_cons3(n2).to_a
